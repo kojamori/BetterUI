@@ -43,7 +43,7 @@ BetterModMenu 是一个非官方、开源、由社区驱动的《Spaceflight Sim
 
 ### Forum Post
 
-TBD
+https://sfsforum.com/index.php?threads/bettermodmenu-filter-mods-by-type-and-more.20179/
 
 ### SFS Modding Guide
 https://kojamori.github.io/SFS-Modding-Guide/
