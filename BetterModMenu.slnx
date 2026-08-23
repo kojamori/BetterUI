@@ -1,4 +1,3 @@
 <Solution>
-  <Project Path="../KMCoreUtils/KMCoreUtils.csproj" />
   <Project Path="BetterModMenu.csproj" />
 </Solution>

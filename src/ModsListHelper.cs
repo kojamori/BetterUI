@@ -4,12 +4,11 @@ using System.Linq;
 using HarmonyLib;
 using ModLoader;
 using ModLoader.UI;
-using SFS.Parts; // Required for CustomAssetsLoader
-using SFS.WorldBase; // Required for PlanetLoader
-using UnityEngine;
-using UnityEngine.SceneManagement;
+using SFS.Parts;
+using SFS.WorldBase;
+using Object = UnityEngine.Object;
 
-namespace BetterModMenu.UI;
+namespace BetterModMenu;
 
 public static class ModsListHelper
 {
@@ -26,11 +25,7 @@ public static class ModsListHelper
         NotLoaded,
         All
     }
-
-    /// <summary>
-    /// Tracks the latest known state of each mod/pack by its saveName.
-    /// Populate this by ensuring your Harmony instance patches ModsMenu.AddMod (see patch below).
-    /// </summary>
+    
     public static readonly Dictionary<string, ModsListElement.ModData> ModLoadStates = new Dictionary<string, ModsListElement.ModData>();
 
     public static List<ModsListElement.ModData> GetModsByStatus(
@@ -69,57 +64,16 @@ public static class ModsListHelper
             return stateMatch && loadStateMatch;
         }).ToList();
     }
-
-    /// <summary>
-    /// Checks exactly how many mods of a specific type are loaded vs not yet loaded.
-    /// Evaluates each mod individually, returning accurate counts instantly, even mid-loading.
-    /// </summary>
-    public static (int LoadedCount, int NotLoadedCount) GetModLoadCounts(
-        ModsListElement.ModType type,
-        Func<string, bool> additionalCheck = null)
-    {
-        var allElements = GetElements();
-        if (allElements == null) return (0, 0);
-
-        int loaded = 0;
-        int notLoaded = 0;
-
-        foreach (var element in allElements)
-        {
-            if (element.type != type) continue;
-            if (additionalCheck != null && !additionalCheck(element.saveName)) continue;
-
-            if (IsModLoaded(element.saveName, type))
-                loaded++;
-            else
-                notLoaded++;
-        }
-
-        return (loaded, notLoaded);
-    }
-
-    private static GameObject modLoaderGameObject;
-    private static Loader _loader;
-
+    
     public static Loader ModLoader
     {
         get
         {
-            if (modLoaderGameObject == null)
+            if (field == null)
             {
-                var scene = SceneManager.GetSceneByName("Base_PC");
-                if (scene.isLoaded)
-                {
-                    modLoaderGameObject = scene.GetRootGameObjects()
-                        .FirstOrDefault(g => g.name == "Mod Loader");
-                        
-                    if (modLoaderGameObject != null)
-                    {
-                        _loader = modLoaderGameObject.GetComponent<Loader>();
-                    }
-                }
+                field = Object.FindFirstObjectByType<Loader>();
             }
-            return _loader;
+            return field;
         }
     }
 
@@ -148,17 +102,14 @@ public static class ModsListHelper
                 return false;
         }
     }
-
-    /// <summary>
-    /// Evaluates the load state of a SPECIFIC mod/pack individually.
-    /// </summary>
+    
     private static bool IsModLoaded(string saveName, ModsListElement.ModType type)
     {
         switch (type)
         {
             case ModsListElement.ModType.Mod:
                 if (ModLoader == null) return false;
-                // Code mods are added to 'loadedMods' synchronously during Early_Load (Awake)
+                // Code mods are added to 'loadedMods' synchronously during Early_Load
                 var loadedMods = Traverse.Create(ModLoader).Field("loadedMods").GetValue<List<Mod>>();
                 return loadedMods != null && loadedMods.Any(m => m.ModNameID == saveName);
 
@@ -168,22 +119,17 @@ public static class ModsListHelper
 
             case ModsListElement.ModType.AssetsPack:
             case ModsListElement.ModType.TexturesPack:
-                // Check our tracked state first (requires the Harmony patch below)
                 if (ModLoadStates.TryGetValue(saveName, out var state))
                 {
-                    // If it's still "n/a", the async bundle read for THIS SPECIFIC pack hasn't finished yet.
+                    // If it's still "n/a", the async bundle read for this pack hasn't finished yet.
                     if (state.description == "n/a") return false;
                     
-                    // If it explicitly failed, it's not loaded.
-                    if (state.description != null && (state.description.StartsWith("ERROR") || state.description.Contains("Failed"))) 
+                    if (state.description != null && (state.description.StartsWith("ERROR:"))) 
                         return false;
                     
-                    // Metadata is resolved and assets are registered. It is loaded.
                     return true;
                 }
-
-                // FALLBACK: If the Harmony patch hasn't been applied yet, we can only use the global flag.
-                // This is less precise but prevents false positives.
+                
                 if (CustomAssetsLoader.finishedLoading)
                 {
                     return IsTypeActive(saveName, type);
@@ -215,9 +161,6 @@ public static class ModsListHelper
         }).ToList();
     }
     
-    /// <summary>
-    /// Planet/Solar System packs are represented as ModData elements, not Mod class instances.
-    /// </summary>
     public static List<ModsListElement.ModData> GetListOfPlanetPacksFromLoader(FilterState state)
     {
         var allElements = GetElements();
@@ -237,14 +180,7 @@ public static class ModsListHelper
             })
             .ToList();
     }
-
-    // =========================================================================
-    // HARMONY PATCH: Required for 100% accurate per-pack load state tracking
-    // =========================================================================
-    // Call `yourHarmonyInstance.PatchAll(typeof(ModsListHelper));` in your mod's 
-    // Awake/Start to activate this. It intercepts every time the game updates 
-    // the mod menu, allowing us to know exactly when a specific pack finishes 
-    // its async load (when its description changes from "n/a" to the real value).
+    
     
     [HarmonyPatch(typeof(ModsMenu), "AddMod")]
     [HarmonyPostfix]

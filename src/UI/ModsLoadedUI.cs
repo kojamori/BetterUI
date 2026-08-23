@@ -2,11 +2,12 @@
 using System.Diagnostics;
 using Cysharp.Threading.Tasks;
 using HarmonyLib;
+using JetBrains.Annotations;
 using ModLoader.UI;
 using SFS.Parts;
 using SFS.UI;
 using SFS.Variables;
-using static BetterModMenu.UI.ModsListHelper;
+using static BetterModMenu.ModsListHelper;
 
 namespace BetterModMenu.UI;
 
@@ -14,43 +15,52 @@ public static class ModsLoadedUI
 {
     #region State and Stopwatch
 
-    private static Stopwatch _stopwatch = new Stopwatch();
-    private static Bool_Reference CodeModsLoaded = new();
-    private static Bool_Reference AssetModsLoaded = new();
+    private static readonly Stopwatch Stopwatch = new();
+    private static readonly Bool_Reference CodeModsLoaded = new();
+    private static readonly Bool_Reference AssetModsLoaded = new();
+    public static readonly Bool_Reference AllModsLoaded = new();
 
     #endregion
     public static void EarlyLoadInitialise()
     {
-        _stopwatch.Start();
+        Stopwatch.Start();
         UnityEngine.Debug.Log("Waiting for custom assets to load...");
 
         CustomAssetsReady.OnLoadDone += () =>
         {
-            _stopwatch.Stop();
+            Stopwatch.Stop();
             AssetModsLoaded.Value = true;
         };
 
         _ = CustomAssetsReady.WaitForCustomAssetsAsync();
 
+        void CheckIfLoaded()
+        {
+            if (CodeModsLoaded.Value && AssetModsLoaded.Value)
+            {
+                AllModsLoaded.Value = true;
+            }
+        }
+
         CodeModsLoaded.OnChange += CheckIfLoaded;
         AssetModsLoaded.OnChange += CheckIfLoaded;
+        AllModsLoaded.OnChange += OnAllModsLoaded;
     }
 
-    private static void CheckIfLoaded()
+    private static void OnAllModsLoaded()
     {
-        if (CodeModsLoaded.Value && AssetModsLoaded.Value)
-        {
-            int codeMods = GetModsByStatus(type: ModsListElement.ModType.Mod, ModsListHelper.FilterState.Active).Count;
-            int assetMods = GetModsByStatus(type: ModsListElement.ModType.AssetsPack, ModsListHelper.FilterState.Active)
-                .Count;
-            int textureMods =
-                GetModsByStatus(type: ModsListElement.ModType.TexturesPack, ModsListHelper.FilterState.Active).Count;
-            int planetMods =
-                GetModsByStatus(type: ModsListElement.ModType.SolarSystem, ModsListHelper.FilterState.Active).Count;
-            Menu.read.ShowReport(
-                $"Loaded: {codeMods} code mod(s), {assetMods} asset pack(s), {textureMods} texture pack(s), and {planetMods} custom solar system(s) in {_stopwatch.ElapsedMilliseconds} ms",
-                null);
-        }
+        if (!AllModsLoaded.Value) return;
+        
+        int codeMods = GetModsByStatus(type: ModsListElement.ModType.Mod, FilterState.Active).Count;
+        int assetMods = GetModsByStatus(type: ModsListElement.ModType.AssetsPack, FilterState.Active)
+            .Count;
+        int textureMods =
+            GetModsByStatus(type: ModsListElement.ModType.TexturesPack, FilterState.Active).Count;
+        int planetMods =
+            GetModsByStatus(type: ModsListElement.ModType.SolarSystem, FilterState.Active).Count;
+        Menu.read.ShowReport(
+            $"Loaded: {codeMods} code mod(s), {assetMods} asset pack(s), {textureMods} texture pack(s), and {planetMods} custom solar system(s) in {Stopwatch.ElapsedMilliseconds} ms",
+            null);
     }
 
     #region Listening for Mod Loading to Finish 
@@ -63,16 +73,15 @@ public static class ModsLoadedUI
                 await UniTask.Yield();
 
             OnLoadDone?.Invoke();
-            IsLoaded = true;
         }
 
         public static event Action OnLoadDone;
-        public static bool IsLoaded { get; private set; }
     }
 
     [HarmonyPatch(typeof(ModLoader.ModLoader), "Start")]
     private static class ModsLoaderPatch
     {
+        [UsedImplicitly]
         private static void Postfix()
         {
             CodeModsLoaded.Value = true;

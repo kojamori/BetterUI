@@ -104,9 +104,6 @@ public static class ModsMenuUI
         le.flexibleWidth = 1;
         le.minWidth = 80;
         le.preferredHeight = FilterHeight;
-    
-        // CRITICAL: Clear any residual sizeDelta.x that Builder may have set
-        filter.rectTransform.sizeDelta = new Vector2(0, filter.rectTransform.sizeDelta.y);
     }
 
     private static void OnFilterChanged()

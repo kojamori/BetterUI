@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
+using BetterModMenu.Patches;
 using BetterModMenu.UI;
 using HarmonyLib;
 using JetBrains.Annotations;
 using ModLoader;
+using ModLoader.Helpers;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace BetterModMenu.Entrypoint;
 
@@ -38,3 +42,4 @@ public class Main : Mod
         Settings.Settings.Init();
     }
 }
+

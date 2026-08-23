@@ -10,15 +10,6 @@ using UnityEngine;
 
 namespace BetterModMenu.Patches;
 
-[UsedImplicitly]
-public class CustomSolarSystemSettings : SolarSystemSettings 
-{
-    // ReSharper disable once InconsistentNaming
-    // ReSharper disable once FieldCanBeMadeReadOnly.Global
-    // ReSharper disable once ConvertToConstant.Global
-    public string icon = "";
-}
-
 [HarmonyPatch(typeof(PlanetLoader), "GetSolarSystemsForModsMenu")]
 public static class Patches {
     [UsedImplicitly]
