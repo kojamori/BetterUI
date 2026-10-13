@@ -14,7 +14,7 @@ Replace the main menu background with a PNG, JPG, GIF, or MP4.
 2. Main menu -> Reset Wallpaper (optional)
 
 Videos loop automatically.
-![menu wallpaper example usage, a blue archive wallpaper found by Luna Tomato.png](./assets/menu_wallpaper.png)
+![menu wallpaper example usage, a blue archive wallpaper found by Luna Tomato.png](./assets/menu_wallpaper_safe.png)
 
 ### Better Mod Menu
 - Filter mods by type (code mod, asset pack, texture pack, custom solar system)
