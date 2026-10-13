@@ -38,8 +38,10 @@ public static class Patches {
                 saveName = solarSystem
             };
 
+            CustomSolarSystemSettings solarSystemSettings = null;
             if (file.Exists() &&
-                JsonWrapper.TryLoadJson(file, out CustomSolarSystemSettings solarSystemSettings))
+                JsonWrapper.TryLoadJson(file, out solarSystemSettings) &&
+                solarSystemSettings != null)
             {
                 data.author = string.IsNullOrWhiteSpace(solarSystemSettings.authorName)
                     ? ""

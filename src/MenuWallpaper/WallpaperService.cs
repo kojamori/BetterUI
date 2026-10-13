@@ -45,9 +45,43 @@ namespace MenuWallpaper
 
         public static void OnHomeStart(HomeManager home)
         {
-            if (view != null) return;
-            if (TryInstall(home)) return;
-            EnsureRunner();
+            if (view != null && !view)
+                view = null;
+
+            try { WallpaperState.Load(); } catch { }
+
+            if (view == null)
+            {
+                if (TryInstall(home)) return;
+                EnsureRunner();
+                return;
+            }
+
+            ApplySavedToExistingView();
+        }
+
+        public static void ApplySavedToExistingView()
+        {
+            try { WallpaperState.Load(); } catch { }
+            if (view == null || !view) { view = null; return; }
+
+            string path = WallpaperState.GetPlayablePath();
+            if (path == null) return;
+
+            if (!string.IsNullOrEmpty(view.CurrentPath) &&
+                string.Equals(view.CurrentPath, path, StringComparison.OrdinalIgnoreCase))
+                return;
+
+            string error;
+            if (view.Play(path, out error))
+                SetStarsVisible(false);
+            else
+                SetStarsVisible(true);
+        }
+
+        internal static void NotifyViewDestroyed(WallpaperView v)
+        {
+            if (view == v) view = null;
         }
 
         public static void EnsureRunner()
@@ -70,6 +104,7 @@ namespace MenuWallpaper
         {
             try
             {
+                if (view != null && !view) view = null;
                 if (view != null) return true;
 
                 GameButton settings = ResolveSettingsButton(home);
@@ -94,14 +129,8 @@ namespace MenuWallpaper
                     if (view.Play(path, out error))
                         SetStarsVisible(false);
                     else
-                    {
-                        Toast(error);
-                        WallpaperState.Clear();
-                    }
+                        SetStarsVisible(true);
                 }
-
-                Debug.Log("[MenuWallpaper] Ready. Canvas='" + canvas.name + "' renderMode=" + canvas.renderMode +
-                          ", wallpaper=" + (path ?? "none"));
 
                 if (runner != null)
                 {

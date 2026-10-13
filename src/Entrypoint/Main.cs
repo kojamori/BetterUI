@@ -27,7 +27,7 @@ public class Main : Mod
     public override string DisplayName => "Better UI";
     public override string Author => "kojamori & Luna Tomato";
     public override string MinimumGameVersionNecessary => "1.6.00.16";
-    public override string ModVersion => "2.0.0";
+    public override string ModVersion => "2.0.1";
     public override string Description => "A mod that improves the in game user interface (UI). Formerly known as 'BetterModMenu'.";
     public override Dictionary<string, string> Dependencies => new();
     public override string IconLink => null;
@@ -57,7 +57,14 @@ public class Main : Mod
         catch (Exception e)
         {
             Debug.LogWarning("[BetterUI] MenuWallpaper setup failed: " + e.Message);
-            try { WallpaperService.EnsureRunner(); } catch { }
+            try
+            {
+                WallpaperService.EnsureRunner();
+            }
+            catch (Exception e2)
+            {
+                Debug.LogWarning("[BetterUI] MenuWallpaper runner setup failed: " + e2.Message);
+            }
         }
 
         Debug.Log("[BetterUI] " + ModVersion + " loaded");

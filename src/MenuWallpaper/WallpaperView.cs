@@ -325,6 +325,7 @@ namespace MenuWallpaper
 
         private void OnDestroy()
         {
+            try { WallpaperService.NotifyViewDestroyed(this); } catch { }
             StopInternal();
         }
 
