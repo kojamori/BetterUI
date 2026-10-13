@@ -42,7 +42,7 @@ Videos loop automatically.
 
 ### Forum Post
 
-https://sfsforum.com/index.php?threads/bettermodmenu-filter-mods-by-type-and-more.20179/
+https://sfsforum.com/index.php?threads/better-ui-by-kojamori-and-luna-tomato.20326/
 
 ### SFS Modding Guide
 https://kojamori.github.io/SFS-Modding-Guide/
