@@ -6,7 +6,7 @@ A code mod for the video game Spaceflight Simulator (SFS) that improves the in-g
 
 ## Features
 
-### Menu Wallpaper Customisation
+### Menu Wallpaper Customisation (by [Luna Tomato](#authorship--credits))
 Replace the main menu background with a PNG, JPG, GIF, or MP4.
 
 1. Main menu -> Change Wallpaper (under Settings)
