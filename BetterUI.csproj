@@ -5,7 +5,7 @@
         <TargetFramework>net48</TargetFramework>
         <LangVersion>latest</LangVersion>
 
-        <AssemblyName>BetterModMenu</AssemblyName>
+        <AssemblyName>BetterUI</AssemblyName>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <OutputPath>bin/$(Configuration)</OutputPath>
 
@@ -13,6 +13,7 @@
         <!-- These are the only things you should be changing -->
         <ImplicitManagedReferences>true</ImplicitManagedReferences>
         <AutoCopyMod>true</AutoCopyMod>
+        <AutoCopyPdb>true</AutoCopyPdb>
         <FallbackSteamPath>UnknownSteamPath</FallbackSteamPath>
         <!-- =============== -->
     </PropertyGroup>
@@ -78,19 +79,21 @@
     <!-- Debugging logs -->
     <Target Name="VerifyPaths" BeforeTargets="CoreCompile;PrepareForBuild">
         <!-- OS -->
-        <Message Text="Operating System: $(OperatingSystem)" Importance="High"/>
-        <Message Text="Steam path resolved to: $(SteamPath)" Importance="High"/>
-        <Message Text="Spaceflight Simulator path resolved to: $(SFSPath)" Importance="High"/>
-        <Message Text="Managed folder resolved to: $(ManagedFolder)" Importance="High"/>
-        <Message Text="Mods folder resolved to: $(ModsFolder)" Importance="High"/>
+        <Message Text="Operating System: $(OperatingSystem)" Importance="High" />
+        <Message Text="Steam path resolved to: $(SteamPath)" Importance="High" />
+        <Message Text="Spaceflight Simulator path resolved to: $(SFSPath)" Importance="High" />
+        <Message Text="Managed folder resolved to: $(ManagedFolder)" Importance="High" />
+        <Message Text="Mods folder resolved to: $(ModsFolder)" Importance="High" />
     </Target>
 
     <!-- Implicit Managed References -->
+    <!-- We exclude assemblies that cause warnings or errors, such as mscorlib. -->
     <ItemGroup>
         <Reference
                 Include="$(ManagedFolder)/*.dll"
                 Exclude="$(ManagedFolder)/System.*.dll;
             $(ManagedFolder)/System.dll;
+            $(ManagedFolder)/mscorlib.dll;
             $(ManagedFolder)/Firebase.*.dll;
             $(ManagedFolder)/Unity.Tasks.dll;
             $(ManagedFolder)/Unity.Compat.dll"
@@ -138,8 +141,17 @@
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="Exists('$(SFSPath)') And '$(AutoCopyMod)' == 'true'">
         <MakeDir Directories="$(ModsFolder)/$(AssemblyName)"
-                 Condition="!Exists('$(ModsFolder)/$(AssemblyName)')"/>
+                 Condition="!Exists('$(ModsFolder)/$(AssemblyName)')" />
 
-        <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll" DestinationFolder="$(ModsFolder)/$(AssemblyName)/" SkipUnchangedFiles="true"/>
+        <!-- Copy .dll -->
+        <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll"
+              DestinationFolder="$(ModsFolder)/$(AssemblyName)/"
+              SkipUnchangedFiles="true"/>
+
+        <!-- Copy .pdb -->
+        <Copy SourceFiles="$(OutputPath)$(AssemblyName).pdb"
+              DestinationFolder="$(ModsFolder)/$(AssemblyName)/"
+              SkipUnchangedFiles="true"
+              Condition="'$(AutoCopyPdb)' == 'true' And Exists('$(OutputPath)/$(AssemblyName).pdb')"/>
     </Target>
 </Project>

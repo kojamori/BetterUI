@@ -5,29 +5,30 @@ using SFS;
 using SFS.Input;
 using SFS.UI;
 using UnityEngine;
+using static BetterUI.Utils.ModsListHelper;
 
-namespace BetterModMenu.UI;
+namespace BetterUI.UI;
 
 public static class LoadSceneConfirmation
 {
     // ReSharper disable once InconsistentNaming
     public static bool BeforeLoadScene(string sceneName, SceneLoader.Settings sceneSettings, SceneLoader __instance)
     {
-        if (sceneName == "Home" || ModsLoadedUI.AllModsLoaded.Value)
+        if (sceneName == "Home" || ModLoadNotification.AllModsLoaded.Value)
         {
             return true;
         }
         
         // Check for unloaded active content
-        var unloadedAssets = ModsListHelper.GetModsByStatus(
+        var unloadedAssets = GetModsByStatus(
             ModLoader.UI.ModsListElement.ModType.AssetsPack, 
-            ModsListHelper.FilterState.Active, 
-            ModsListHelper.LoadState.NotLoaded);
+            FilterState.Active, 
+            LoadState.NotLoaded);
 
-        var unloadedTextures = ModsListHelper.GetModsByStatus(
+        var unloadedTextures = GetModsByStatus(
             ModLoader.UI.ModsListElement.ModType.TexturesPack, 
-            ModsListHelper.FilterState.Active, 
-            ModsListHelper.LoadState.NotLoaded);
+            FilterState.Active, 
+            LoadState.NotLoaded);
         
         if (!unloadedAssets.Any() && !unloadedTextures.Any())
         {
@@ -35,25 +36,25 @@ public static class LoadSceneConfirmation
         }
         
         // Build Report
-        StringBuilder report = new StringBuilder();
-        report.AppendLine("The following content packs are still loading:");
+        var report = new StringBuilder();
+        report.AppendLine("The following mods are still loading:");
         report.AppendLine();
 
         if (unloadedAssets.Any())
         {
-            report.AppendLine("<b>Asset Packs:</b>");
+            report.AppendLine($"<b>Asset Packs ({unloadedAssets.Count}):</b>");
             foreach (var mod in unloadedAssets)
                 report.AppendLine($"   • {mod.name}");
         }
 
         if (unloadedTextures.Any())
         {
-            report.AppendLine("<b>Texture Packs:</b>");
+            report.AppendLine($"$<b>Texture Packs ({unloadedTextures.Count}):</b>");
             foreach (var mod in unloadedTextures)
                 report.AppendLine($"   • {mod.name}");
         }
 
-        report.AppendLine("\nEntering now may result in missing parts or textures.");
+        report.AppendLine("\nEntering now may result in missing parts, textures or other assets.");
         
         HandleConfirmationAsync(__instance, sceneName, sceneSettings, report.ToString());
         
@@ -80,7 +81,7 @@ public static class LoadSceneConfirmation
         }
         catch (Exception ex)
         {
-            Debug.LogError($"[BetterModMenu] Error in confirmation handler: {ex}");
+            Debug.LogError($"[BetterUI] Error in confirmation handler: {ex}");
         }
     }
 }

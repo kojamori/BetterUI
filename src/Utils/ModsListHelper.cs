@@ -8,7 +8,7 @@ using SFS.Parts;
 using SFS.WorldBase;
 using Object = UnityEngine.Object;
 
-namespace BetterModMenu;
+namespace BetterUI.Utils;
 
 public static class ModsListHelper
 {

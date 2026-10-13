@@ -5,10 +5,15 @@ using SFS.Parsers.Json;
 using SFS.Parts;
 using SFS.WorldBase;
 using System;
+using BetterUI.Utils;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace BetterModMenu.Patches;
+namespace BetterUI.Patches;
+
+// The purpose of this patch is to add support for custom solar system icons in the Mods menu.
+// The base game has no icon field, so we use CustomSolarSystemSettings.
+// then, we read the icon path from Import_Settings.txt and load the icon from the solar system folder.
 
 [HarmonyPatch(typeof(PlanetLoader), "GetSolarSystemsForModsMenu")]
 public static class Patches {
@@ -49,7 +54,7 @@ public static class Patches {
                     : solarSystemSettings.version;
 
                 
-                // The new code for adding icons.
+                // The new code for adding icons, nothing else is changed
                 if (!string.IsNullOrEmpty(solarSystemSettings.icon))
                 {
                     try
@@ -89,6 +94,5 @@ public static class Patches {
 
         return false;
     }
-    
 }
 

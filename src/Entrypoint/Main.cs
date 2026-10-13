@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
-using BetterModMenu.Patches;
-using BetterModMenu.UI;
+using System.Reflection;
+using BetterUI.Patches;
+using BetterUI.UI;
 using HarmonyLib;
 using JetBrains.Annotations;
+using MenuWallpaper;
 using ModLoader;
 using ModLoader.Helpers;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace BetterModMenu.Entrypoint;
+namespace BetterUI.Entrypoint;
 
 [UsedImplicitly]
 public class Main : Mod
@@ -21,12 +23,12 @@ public class Main : Mod
 
     public static DefaultFolder Folder => new (Instance.ModFolder);
 
-    public override string ModNameID => "BetterModMenu";
-    public override string DisplayName => "Better Mod Menu";
-    public override string Author => "kojamori";
+    public override string ModNameID => "BetterUI";
+    public override string DisplayName => "Better UI";
+    public override string Author => "kojamori & Luna Tomato";
     public override string MinimumGameVersionNecessary => "1.6.00.16";
-    public override string ModVersion => "1.0.0";
-    public override string Description => "A mod that improves the in-game mod menu.";
+    public override string ModVersion => "2.0.0";
+    public override string Description => "A mod that improves the in game user interface (UI). Formerly known as 'BetterModMenu'.";
     public override Dictionary<string, string> Dependencies => new();
     public override string IconLink => null;
     public override Action LoadKeybindings => null;
@@ -34,12 +36,32 @@ public class Main : Mod
     public override void Early_Load()
     {
         new Harmony(ModNameID).PatchAll();
-        ModsLoadedUI.EarlyLoadInitialise();
+        ModLoadNotification.EarlyLoadInitialise();
     }
     
     public override void Load()
     {
         Settings.Settings.Init();
+        
+        
+        #region Menu Wallpaper Loading
+        WallpaperConfig.Load(ModFolder);
+        WallpaperState.Load();
+
+        try
+        {
+            if (SFS.UI.HomeManager.main != null)
+                WallpaperService.OnHomeStart(SFS.UI.HomeManager.main);
+            WallpaperService.EnsureRunner();
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning("[BetterUI] MenuWallpaper setup failed: " + e.Message);
+            try { WallpaperService.EnsureRunner(); } catch { }
+        }
+
+        Debug.Log("[BetterUI] " + ModVersion + " loaded");
+        #endregion
     }
 }
 

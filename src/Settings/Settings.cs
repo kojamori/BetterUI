@@ -3,9 +3,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SFS.Parsers.Json;
 using UnityEngine;
-using BetterModMenu.Entrypoint;
+using BetterUI.Entrypoint;
 
-namespace BetterModMenu.Settings;
+namespace BetterUI.Settings;
 
 [Serializable]
 public class SettingsData
@@ -20,7 +20,7 @@ public class SettingsData
 public static class Settings
 {
     private const string SettingsFileName = "settings.json"; 
-    public static readonly SettingsData Filters = new();
+    public static readonly SettingsData Data = new();
 
     private static IFile FilePath => Main.Folder.GetFile(SettingsFileName);
 
@@ -33,7 +33,7 @@ public static class Settings
 
     public static void Save()
     {
-        JsonWrapper.SaveAsJson(FilePath, Filters, true);
+        JsonWrapper.SaveAsJson(FilePath, Data, true);
     }
 
     private static void Load()
@@ -41,11 +41,11 @@ public static class Settings
         if (!FilePath.Exists())
             return;
 
-        string text = FilePath.ReadText();
+        var text = FilePath.ReadText();
         if (JToken.Parse(text) is JObject json)
         {
-            JsonReader reader = json.CreateReader();
-            JsonSerializer.Create().Populate(reader, Filters);
+            var reader = json.CreateReader();
+            JsonSerializer.Create().Populate(reader, Data);
         }
         else
         {

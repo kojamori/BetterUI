@@ -1,7 +1,7 @@
 ﻿using JetBrains.Annotations;
 using SFS.WorldBase;
 
-namespace BetterModMenu;
+namespace BetterUI.Utils;
 
 [UsedImplicitly]
 public class CustomSolarSystemSettings : SolarSystemSettings 

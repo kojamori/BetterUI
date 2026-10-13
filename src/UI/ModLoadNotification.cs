@@ -7,11 +7,11 @@ using ModLoader.UI;
 using SFS.Parts;
 using SFS.UI;
 using SFS.Variables;
-using static BetterModMenu.ModsListHelper;
+using static BetterUI.Utils.ModsListHelper;
 
-namespace BetterModMenu.UI;
+namespace BetterUI.UI;
 
-public static class ModsLoadedUI
+public static class ModLoadNotification
 {
     #region State and Stopwatch
 
@@ -51,12 +51,12 @@ public static class ModsLoadedUI
     {
         if (!AllModsLoaded.Value) return;
         
-        int codeMods = GetModsByStatus(type: ModsListElement.ModType.Mod, FilterState.Active).Count;
-        int assetMods = GetModsByStatus(type: ModsListElement.ModType.AssetsPack, FilterState.Active)
+        var codeMods = GetModsByStatus(type: ModsListElement.ModType.Mod, FilterState.Active).Count;
+        var assetMods = GetModsByStatus(type: ModsListElement.ModType.AssetsPack, FilterState.Active)
             .Count;
-        int textureMods =
+        var textureMods =
             GetModsByStatus(type: ModsListElement.ModType.TexturesPack, FilterState.Active).Count;
-        int planetMods =
+        var planetMods =
             GetModsByStatus(type: ModsListElement.ModType.SolarSystem, FilterState.Active).Count;
         Menu.read.ShowReport(
             $"Loaded: {codeMods} code mod(s), {assetMods} asset pack(s), {textureMods} texture pack(s), and {planetMods} custom solar system(s) in {Stopwatch.ElapsedMilliseconds} ms",

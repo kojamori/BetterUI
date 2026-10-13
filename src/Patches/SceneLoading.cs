@@ -1,15 +1,12 @@
-﻿using System;
-using System.Linq;
-using System.Text;
-using BetterModMenu.UI;
+﻿using BetterUI.UI;
 using HarmonyLib;
 using JetBrains.Annotations;
 using SFS;
-using SFS.Input;
-using SFS.UI;
-using UnityEngine;
 
-namespace BetterModMenu.Patches;
+namespace BetterUI.Patches;
+
+// The purpose of this patch is to hook into the scene loading process and display a confirmation dialog before loading a new scene.
+// Used by the Better Mod Menu mainly before the user goes from home scene to the build or world scene.
 
 [HarmonyPatch(typeof(SceneLoader), "LoadScene")]
 public class SceneLoading

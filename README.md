@@ -1,18 +1,22 @@
-# Better Mod Menu
+# Better UI
 
-A code mod for the video game Spaceflight Simulator (SFS) that improves the in-game mod menu.
-BetterModMenu 是一个非官方、开源、由社区驱动的《Spaceflight Simulator》（SFS）模组菜单优化项目。
-[![Demonstration of Better Mod Menu v1](https://www.youtube.com/watch?v=JpWrF3RdsOQ)](https://www.youtube.com/watch?v=JpWrF3RdsOQ)
+A code mod for the video game Spaceflight Simulator (SFS) that improves the in-game user interface (UI).
+[![Demonstration of Better UI (Mod Menu)](https://www.youtube.com/watch?v=JpWrF3RdsOQ)](https://www.youtube.com/watch?v=JpWrF3RdsOQ)
 
-<br>
-
-<u>Disclaimer</u>
-
-**This mod includes all functionality from the [PlanetPackIcons](https://github.com/kojamori/PlanetPackIcons/) Mod, and hence you should uninstall PlanetPackIcons to avoid any conflicts with this mod.**
-
-**This mod includes all functionality (including enhanced reports) that the [Better Mod Loading](https://github.com/aaaa111ssf/SFS-BetterModLoading) Mod provides, and hence you should uninstall Better Mod Loading to avoid any conflicts with this mod.**
 
 ## Features
+
+### Menu Wallpaper Customisation
+Replace the main menu background with a PNG, JPG, GIF, or MP4.
+
+1. Main menu -> Change Wallpaper (under Settings)
+   - For non-Windows users, you must manually set the wallpaper path in `BetterUI/wallpaper.txt`
+2. Main menu -> Reset Wallpaper (optional)
+
+Videos loop automatically.
+![menu wallpaper example usage, a blue archive wallpaper found by Luna Tomato.png](./assets/menu_wallpaper.png)
+
+### Better Mod Menu
 - Filter mods by type (code mod, asset pack, texture pack, custom solar system)
   - filter settings are saved to disk
 ![filters example](./assets/filters.png)
@@ -24,12 +28,7 @@ BetterModMenu 是一个非官方、开源、由社区驱动的《Spaceflight Sim
   - Simply add a new `"icon"` field to your ImportSettings.txt, and put an image file in the same folder as ImportSettings.txt and reference it in the file, including the extension. 
 ![planet pack icons example](./assets/planet_pack_icons_example.png)
 ## Future Roadmap
-- ability to delete mods in-game
-- reload non-code mods in-game
-- auto-updatable mods
-- detailed individual mod view window
-  - view code mod dependencies, etc
-- browse online list of mods from in-game and install them
+[ROADMAP.md](ROADMAP.md)
 
 ## Requirements and Dependencies
 - SFS (PC Version)
@@ -52,6 +51,13 @@ https://kojamori.github.io/SFS-Modding-Guide/
 
 [Join the discord server here!](https://discord.gg/QHEmcehAe9)
 
+# Authorship & Credits
+
+* <img src="assets/kojamori_pfp.png" width="100" style="vertical-align: middle;" alt="kojamori's avatar"></img>  **kojamori** - Lead developer and maintainer of the mod.
+
+
+* <img src="assets/luna_tomato_pfp.png" width="100" style="vertical-align: middle;" alt="Luna Tomato's avatar"></img> **Luna Tomato** - Implemented the menu wallpaper customisation system (Integrated with the author's direct permission).
+  * [GitHub Profile](https://github.com) | [YouTube Channel](https://www.youtube.com/channel/UCv2v5wErevqbt4HJkFUhe2A) | [Spaceflight Simulator Thailand Discord](https://discord.gg/7g6v8Z9k)
 
 # License
 

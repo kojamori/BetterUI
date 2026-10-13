@@ -3,10 +3,12 @@ using HarmonyLib;
 using JetBrains.Annotations;
 using ModLoader.UI;
 using UnityEngine;
-using static BetterModMenu.Settings.Settings;
-using static BetterModMenu.UI.ModsMenuUI;
+using static BetterUI.Settings.Settings;
+using static BetterUI.UI.BetterModMenu;
 
-namespace BetterModMenu.Patches;
+namespace BetterUI.Patches;
+
+// The purpose of this patch is to not display mods in the mod menu that are filtered out by the settings.
 
 [HarmonyPatch(typeof(ModsMenu), "DrawUI")]
 public static class ModMenuPatches
@@ -27,10 +29,11 @@ public static class ModMenuPatches
 
         foreach (var modData in elements)
         {
-            if (!Filters.showTexturePacks && modData.type == ModsListElement.ModType.TexturesPack) continue;
-            if (!Filters.showCodeMods && modData.type == ModsListElement.ModType.Mod) continue;
-            if (!Filters.showPartPacks && modData.type == ModsListElement.ModType.AssetsPack) continue;
-            if (!Filters.showCustomSolarSystems && modData.type == ModsListElement.ModType.SolarSystem) continue;
+            // the main filtering logic, not much else is changed
+            if (!Data.showTexturePacks && modData.type == ModsListElement.ModType.TexturesPack) continue;
+            if (!Data.showCodeMods && modData.type == ModsListElement.ModType.Mod) continue;
+            if (!Data.showPartPacks && modData.type == ModsListElement.ModType.AssetsPack) continue;
+            if (!Data.showCustomSolarSystems && modData.type == ModsListElement.ModType.SolarSystem) continue;
 
             var item = elementPool.GetItem();
             item.gameObject.SetActive(true);
@@ -62,6 +65,10 @@ public static class ModMenuPatches
         return false;
     }
 }
+
+
+// just load the UI when the menu is opened, so we don't have to wait for the mod list to be drawn
+// fires only once
 
 [HarmonyPatch(typeof(ModsMenu), "OnOpen")]
 public static class ModsMenuOnOpenPatch

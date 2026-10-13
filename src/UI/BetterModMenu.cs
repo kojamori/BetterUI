@@ -4,11 +4,11 @@ using SFS.UI;
 using SFS.UI.ModGUI;
 using UnityEngine;
 using UnityEngine.UI;
-using static BetterModMenu.Settings.Settings;
+using static BetterUI.Settings.Settings;
 
-namespace BetterModMenu.UI;
+namespace BetterUI.UI;
 
-public static class ModsMenuUI
+public static class BetterModMenu
 {
     #region References and State
 
@@ -38,7 +38,7 @@ public static class ModsMenuUI
 
         _modsMenuScrollElement = menu.elementsHolder.GetComponent<ScrollElement>();
         
-        var filterBar = new GameObject("BetterModMenu_FilterBar", typeof(RectTransform));
+        var filterBar = new GameObject("BetterUI_ModMenu_FilterBar", typeof(RectTransform));
         filterBar.transform.SetParent(menu.menuHolder.transform, false);
         
         filterBar.Rect().anchoredPosition = new Vector2(0, (int)(_menuRect.sizeDelta.y/2) - MenuHeightIncrease/2);
@@ -62,20 +62,20 @@ public static class ModsMenuUI
         var parent = filterBar.Rect();
 
         CreateFilterToggle(parent, "Texture Packs",
-            () => Filters.showTexturePacks,
-            v => { Filters.showTexturePacks = v; OnFilterChanged(); });
+            () => Data.showTexturePacks,
+            v => { Data.showTexturePacks = v; OnFilterChanged(); });
 
         CreateFilterToggle(parent, "Code Mods",
-            () => Filters.showCodeMods,
-            v => { Filters.showCodeMods = v; OnFilterChanged(); });
+            () => Data.showCodeMods,
+            v => { Data.showCodeMods = v; OnFilterChanged(); });
 
         CreateFilterToggle(parent, "Part Packs",
-            () => Filters.showPartPacks,
-            v => { Filters.showPartPacks = v; OnFilterChanged(); });
+            () => Data.showPartPacks,
+            v => { Data.showPartPacks = v; OnFilterChanged(); });
 
         CreateFilterToggle(parent, "Solar Systems",
-            () => Filters.showCustomSolarSystems,
-            v => { Filters.showCustomSolarSystems = v; OnFilterChanged(); });
+            () => Data.showCustomSolarSystems,
+            v => { Data.showCustomSolarSystems = v; OnFilterChanged(); });
 
         var smgButton = Builder.CreateButton(
             parent: menu.menuHolder.transform,
