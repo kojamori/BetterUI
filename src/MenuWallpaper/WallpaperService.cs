@@ -44,19 +44,26 @@ namespace MenuWallpaper
 
         public static void OnHomeStart(HomeManager home)
         {
-            if (view != null && !view)
-                view = null;
+            // Always reinstall after leaving the menu (map/world) so a stale
+            // wallpaper root cannot sit on top of a rebuilt home UI.
+            DestroyView();
 
             try { WallpaperState.Load(); } catch { }
 
-            if (view == null)
-            {
-                if (TryInstall(home)) return;
-                EnsureRunner();
-                return;
-            }
+            if (TryInstall(home)) return;
+            EnsureRunner();
+        }
 
-            ApplySavedToExistingView();
+        private static void DestroyView()
+        {
+            if (view == null) return;
+            try
+            {
+                if (view)
+                    UnityEngine.Object.Destroy(view.gameObject);
+            }
+            catch { }
+            view = null;
         }
 
         public static void ApplySavedToExistingView()
@@ -244,7 +251,8 @@ namespace MenuWallpaper
 
         private static WallpaperView CreateView(Canvas canvas)
         {
-            GameObject root = new GameObject("MenuWallpaper", typeof(RectTransform), typeof(LayoutElement));
+            // Own canvas behind the menu so wallpaper never covers buttons
+            GameObject root = new GameObject("MenuWallpaper", typeof(RectTransform), typeof(Canvas));
             root.layer = canvas.gameObject.layer;
             RectTransform rt = (RectTransform)root.transform;
             rt.SetParent(canvas.transform, false);
@@ -253,11 +261,25 @@ namespace MenuWallpaper
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
             rt.SetAsFirstSibling();
-            root.GetComponent<LayoutElement>().ignoreLayout = true;
+
+            Canvas wpCanvas = root.GetComponent<Canvas>();
+            wpCanvas.overrideSorting = true;
+            wpCanvas.sortingLayerID = canvas.sortingLayerID;
+            wpCanvas.sortingOrder = canvas.sortingOrder - 10;
+            wpCanvas.renderMode = canvas.renderMode;
+            if (canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+                wpCanvas.worldCamera = canvas.worldCamera;
+
+            // Do not add GraphicRaycaster — wallpaper must not block clicks
 
             GameObject imgGo = new GameObject("Image", typeof(RectTransform), typeof(RawImage), typeof(AspectRatioFitter));
             imgGo.layer = root.layer;
-            imgGo.transform.SetParent(rt, false);
+            RectTransform irt = (RectTransform)imgGo.transform;
+            irt.SetParent(rt, false);
+            irt.anchorMin = Vector2.zero;
+            irt.anchorMax = Vector2.one;
+            irt.offsetMin = Vector2.zero;
+            irt.offsetMax = Vector2.zero;
 
             RawImage raw = imgGo.GetComponent<RawImage>();
             raw.raycastTarget = false;
@@ -275,10 +297,22 @@ namespace MenuWallpaper
         {
             try
             {
+                // Only touch Stars / shooting-star objects — never deactivate a shared UI root
                 Stars[] stars = UnityEngine.Object.FindObjectsByType<Stars>(FindObjectsInactive.Include, FindObjectsSortMode.None);
                 foreach (Stars s in stars)
                 {
-                    if (s != null) s.gameObject.SetActive(visible);
+                    if (s == null) continue;
+                    // Prefer disabling the component + child renderers over SetActive on the GO
+                    // (SetActive on a parent can hide the whole home menu after scene reloads)
+                    s.enabled = visible;
+                    foreach (Renderer r in s.GetComponentsInChildren<Renderer>(true))
+                    {
+                        if (r != null) r.enabled = visible;
+                    }
+                    foreach (CanvasRenderer cr in s.GetComponentsInChildren<CanvasRenderer>(true))
+                    {
+                        if (cr != null) cr.SetAlpha(visible ? 1f : 0f);
+                    }
                 }
 
                 SFS.ShootingStarManager[] shooters =
@@ -287,7 +321,13 @@ namespace MenuWallpaper
                 {
                     if (m == null) continue;
                     m.enabled = visible;
-                    if (m.starHolder != null) m.starHolder.SetActive(visible);
+                    if (m.starHolder != null)
+                    {
+                        foreach (Renderer r in m.starHolder.GetComponentsInChildren<Renderer>(true))
+                        {
+                            if (r != null) r.enabled = visible;
+                        }
+                    }
                 }
             }
             catch (Exception e)

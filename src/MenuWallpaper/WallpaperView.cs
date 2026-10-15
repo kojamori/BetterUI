@@ -313,6 +313,13 @@ namespace MenuWallpaper
             if (OnFailed != null) OnFailed(message);
         }
 
+        private void LateUpdate()
+        {
+            // Stay behind menu buttons if the hierarchy is rebuilt
+            if (transform.parent != null && transform.GetSiblingIndex() != 0)
+                transform.SetAsFirstSibling();
+        }
+
         private void Update()
         {
             if (pump != null)

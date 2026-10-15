@@ -23,13 +23,13 @@ public class Main : Mod
     public override string DisplayName => "Better UI";
     public override string Author => "kojamori & Luna Tomato";
     public override string MinimumGameVersionNecessary => "1.6.00.16";
-    public override string ModVersion => "1.2.0";
+    public override string ModVersion => "1.2.1";
     public override string Description => "A mod that improves the in game user interface (UI).";
     public override Dictionary<string, string> Dependencies => new()
     {
         { "UITools", "v1.1.5" }
     };
-    public override string IconLink => "https://raw.githubusercontent.com/kojamori/BetterUI/refs/heads/main/assets/logo.png";
+    public override string IconLink => null;
     public override Action LoadKeybindings => null;
 
     public override void Early_Load()
@@ -47,10 +47,7 @@ public class Main : Mod
             else
                 WallpaperService.EnsureRunner();
         }
-        catch
-        {
-            Debug.LogWarning("[BetterUI] Failed to ensure WallpaperService runner on scene load.");
-        }
+        catch { }
     }
 
     public override void Load()
@@ -59,14 +56,7 @@ public class Main : Mod
 
         WallpaperConfig.Load(ModFolder);
         WallpaperState.Load();
-        try
-        {
-            WallpaperSettingsMenu.Register();
-        }
-        catch
-        {
-            Debug.LogWarning("[BetterUI] Failed to register Wallpaper Settings Menu.");
-        }
+        try { WallpaperSettingsMenu.Register(); } catch { }
 
         try
         {
@@ -83,14 +73,7 @@ public class Main : Mod
         catch (Exception e)
         {
             Debug.LogWarning("[BetterUI] MenuWallpaper setup failed: " + e.Message);
-            try
-            {
-                WallpaperService.EnsureRunner();
-            }
-            catch
-            {
-                Debug.LogWarning("[BetterUI] Failed to ensure WallpaperService runner.");
-            }
+            try { WallpaperService.EnsureRunner(); } catch { }
         }
     }
 }
