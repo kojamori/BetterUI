@@ -24,7 +24,7 @@ public class Main : Mod
     public override string Author => "kojamori & Luna Tomato";
     public override string MinimumGameVersionNecessary => "1.6.00.16";
     public override string ModVersion => "1.2.0";
-    public override string Description => "A mod that improves the in game user interface (UI). Formerly known as 'BetterModMenu'.";
+    public override string Description => "A mod that improves the in game user interface (UI).";
     public override Dictionary<string, string> Dependencies => new()
     {
         { "UITools", "v1.1.5" }
