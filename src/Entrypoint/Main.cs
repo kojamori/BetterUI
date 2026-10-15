@@ -29,7 +29,7 @@ public class Main : Mod
     {
         { "UITools", "v1.1.5" }
     };
-    public override string IconLink => null;
+    public override string IconLink => "https://raw.githubusercontent.com/kojamori/BetterUI/refs/heads/main/assets/logo.png";
     public override Action LoadKeybindings => null;
 
     public override void Early_Load()

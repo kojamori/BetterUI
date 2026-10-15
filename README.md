@@ -1,4 +1,5 @@
 # Better UI
+<img src="assets/logo.png" width="300" style="vertical-align: middle;" alt="Better UI Logo made by Luna Tomato"></img>
 
 A code mod for the video game Spaceflight Simulator (SFS) that improves the in-game user interface (UI).
 [![Demonstration of Better UI (Mod Menu)](https://www.youtube.com/watch?v=JpWrF3RdsOQ)](https://www.youtube.com/watch?v=JpWrF3RdsOQ)
