@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using BetterUI.Patches;
 using BetterUI.UI;
 using HarmonyLib;
 using JetBrains.Annotations;
 using MenuWallpaper;
 using ModLoader;
-using ModLoader.Helpers;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -21,15 +19,16 @@ public class Main : Mod
 
     public Main() => Instance = this;
 
-    public static DefaultFolder Folder => new (Instance.ModFolder);
-
     public override string ModNameID => "BetterUI";
     public override string DisplayName => "Better UI";
     public override string Author => "kojamori & Luna Tomato";
     public override string MinimumGameVersionNecessary => "1.6.00.16";
-    public override string ModVersion => "1.1.1";
-    public override string Description => "A mod that improves the in game user interface (UI).";
-    public override Dictionary<string, string> Dependencies => new();
+    public override string ModVersion => "1.2.0";
+    public override string Description => "A mod that improves the in game user interface (UI). Formerly known as 'BetterModMenu'.";
+    public override Dictionary<string, string> Dependencies => new()
+    {
+        { "UITools", "v1.1.5" }
+    };
     public override string IconLink => null;
     public override Action LoadKeybindings => null;
 
@@ -38,21 +37,48 @@ public class Main : Mod
         new Harmony(ModNameID).PatchAll();
         ModLoadNotification.EarlyLoadInitialise();
     }
-    
+
+    private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        try
+        {
+            if (SFS.UI.HomeManager.main != null)
+                WallpaperService.OnHomeStart(SFS.UI.HomeManager.main);
+            else
+                WallpaperService.EnsureRunner();
+        }
+        catch
+        {
+            Debug.LogWarning("[BetterUI] Failed to ensure WallpaperService runner on scene load.");
+        }
+    }
+
     public override void Load()
     {
         Settings.Settings.Init();
-        
-        
-        #region Menu Wallpaper Loading
+
         WallpaperConfig.Load(ModFolder);
         WallpaperState.Load();
+        try
+        {
+            WallpaperSettingsMenu.Register();
+        }
+        catch
+        {
+            Debug.LogWarning("[BetterUI] Failed to register Wallpaper Settings Menu.");
+        }
 
         try
         {
             if (SFS.UI.HomeManager.main != null)
                 WallpaperService.OnHomeStart(SFS.UI.HomeManager.main);
-            WallpaperService.EnsureRunner();
+            else
+                WallpaperService.EnsureRunner();
+
+            WallpaperService.ApplySavedToExistingView();
+
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
         catch (Exception e)
         {
@@ -61,14 +87,10 @@ public class Main : Mod
             {
                 WallpaperService.EnsureRunner();
             }
-            catch (Exception e2)
+            catch
             {
-                Debug.LogWarning("[BetterUI] MenuWallpaper runner setup failed: " + e2.Message);
+                Debug.LogWarning("[BetterUI] Failed to ensure WallpaperService runner.");
             }
         }
-
-        Debug.Log("[BetterUI] " + ModVersion + " loaded");
-        #endregion
     }
 }
-

@@ -7,7 +7,7 @@ using System;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace BetterUI.Utils.MenuWallpaper;
+namespace MenuWallpaper;
 
 internal static class NativeFileDialog
 {

@@ -12,7 +12,6 @@ using UnityEngine.UI;
 using GameButton = SFS.UI.Button;
 using GameButtonPC = SFS.UI.ButtonPC;
 using HomeManager = SFS.UI.HomeManager;
-using BetterUI.Utils.MenuWallpaper;
 
 namespace MenuWallpaper
 {
@@ -120,7 +119,6 @@ namespace MenuWallpaper
 
                 view = CreateView(canvas);
                 view.OnFailed = OnPlaybackFailed;
-                CreateButtons(settings);
 
                 string path = WallpaperState.GetPlayablePath();
                 if (path != null)
@@ -305,9 +303,9 @@ namespace MenuWallpaper
             bool hasLayout = parent != null && parent.GetComponent<LayoutGroup>() != null;
 
             List<GameButton> created = new List<GameButton>();
-            created.Add(CloneButton(settings, "Change Wallpaper", OnChangeClicked));
+            created.Add(CloneButton(settings, "Change Wallpaper", ChangeWallpaper));
             if (WallpaperConfig.ShowResetButton)
-                created.Add(CloneButton(settings, "Reset Wallpaper", OnResetClicked));
+                created.Add(CloneButton(settings, "Reset Wallpaper", ResetWallpaper));
 
             if (hasLayout)
             {
@@ -442,11 +440,26 @@ namespace MenuWallpaper
             catch (Exception) { }
         }
 
-                        private static void OnChangeClicked()
+        public static void ChangeWallpaper()
         {
             try
             {
-                if (view == null) return;
+                if (view == null || !view)
+                {
+                    try
+                    {
+                        if (SFS.UI.HomeManager.main != null)
+                            OnHomeStart(SFS.UI.HomeManager.main);
+                        else
+                            EnsureRunner();
+                    }
+                    catch { }
+                }
+                if (view == null || !view)
+                {
+                    Toast("Open the main menu first, then try again");
+                    return;
+                }
 
                 if (!NativeFileDialog.IsSupported)
                 {
@@ -484,11 +497,15 @@ namespace MenuWallpaper
             }
         }
 
-        private static void OnResetClicked()
+        public static void ResetWallpaper()
         {
             try
             {
-                if (view == null) return;
+                if (view == null || !view)
+                {
+                    Toast("Open the main menu first, then try again");
+                    return;
+                }
                 if (!WallpaperState.HasWallpaper && view.CurrentPath == null)
                 {
                     Toast("No custom wallpaper is set");
@@ -510,6 +527,26 @@ namespace MenuWallpaper
             Toast(message);
             SetStarsVisible(true);
             WallpaperState.Clear();
+        }
+
+        public static void ApplyFitMode()
+        {
+            try
+            {
+                if (view != null && view)
+                    view.RefreshFit();
+            }
+            catch { }
+        }
+
+        public static void ApplyVideoAudio()
+        {
+            try
+            {
+                if (view != null && view)
+                    view.ApplyVideoAudio();
+            }
+            catch { }
         }
 
         internal static void Toast(string message)

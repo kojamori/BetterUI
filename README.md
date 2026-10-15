@@ -3,6 +3,7 @@
 A code mod for the video game Spaceflight Simulator (SFS) that improves the in-game user interface (UI).
 [![Demonstration of Better UI (Mod Menu)](https://www.youtube.com/watch?v=JpWrF3RdsOQ)](https://www.youtube.com/watch?v=JpWrF3RdsOQ)
 
+**Note this mod replaces BetterModMenu, so uninstall it and use this mod instead!**
 
 ## Features
 
@@ -13,8 +14,10 @@ Replace the main menu background with a PNG, JPG, GIF, or MP4.
    - For non-Windows users, you must manually set the wallpaper path in `BetterUI/wallpaper.txt`
 2. Main menu -> Reset Wallpaper (optional)
 
-Videos loop automatically.
-![menu wallpaper example usage, a blue archive wallpaper found by Luna Tomato.png](./assets/menu_wallpaper_safe.png)
+![menu wallpaper example usage, a wallpaper of earth from space found by Luna Tomato.png](./assets/menu_wallpaper_1.png)
+![menu wallpaper example usage, a blue archive wallpaper found by Luna Tomato.png](./assets/menu_wallpaper_2.png)
+![menu wallpaper example usage, a female fantasy character wallpaper found by Luna Tomato.png](./assets/menu_wallpaper_3.png)
+![wallpaper settings menu](./assets/wallpaper_settings.png)
 
 ### Better Mod Menu
 - Filter mods by type (code mod, asset pack, texture pack, custom solar system)

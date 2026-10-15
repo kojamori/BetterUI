@@ -18,6 +18,9 @@ namespace MenuWallpaper
 
         public static bool Cover = true;
 
+        // fullscreen | fit | 16:9 | 9:16 | 1:1 | 4:3
+        public static string FitMode = "fullscreen";
+
         public static bool ShowResetButton = true;
 
         public static bool VideoSound = false;
@@ -46,6 +49,7 @@ namespace MenuWallpaper
                     switch (key)
                     {
                         case "cover": Cover = ParseBool(val, Cover); break;
+                        case "fitmode": FitMode = NormalizeFitMode(val); break;
                         case "showresetbutton": ShowResetButton = ParseBool(val, ShowResetButton); break;
                         case "videosound": VideoSound = ParseBool(val, VideoSound); break;
                         case "videovolume": VideoVolume = Mathf.Clamp01(ParseFloat(val, VideoVolume)); break;
@@ -92,6 +96,7 @@ namespace MenuWallpaper
                     lines.RemoveAt(lines.Count - 1);
                 lines.Add("");
                 lines.Add("Cover=" + (Cover ? "true" : "false"));
+                lines.Add("FitMode=" + FitMode);
                 lines.Add("ShowResetButton=" + (ShowResetButton ? "true" : "false"));
                 lines.Add("VideoSound=" + (VideoSound ? "true" : "false"));
                 lines.Add("VideoVolume=" + VideoVolume.ToString(CultureInfo.InvariantCulture));
@@ -105,6 +110,75 @@ namespace MenuWallpaper
                 Debug.LogWarning("[MenuWallpaper] SaveSettingsKeys failed: " + e.Message);
                 return false;
             }
+        }
+
+
+        public static string NormalizeFitMode(string val)
+        {
+            if (string.IsNullOrEmpty(val)) return FitMode;
+            string v = val.Trim().ToLowerInvariant().Replace(" ", "").Replace("_", "");
+            switch (v)
+            {
+                case "fullscreen":
+                case "full":
+                case "cover":
+                case "fill":
+                    return "fullscreen";
+                case "fit":
+                case "contain":
+                case "original":
+                    return "fit";
+                case "16:9":
+                case "16x9":
+                case "16-9":
+                    return "16:9";
+                case "9:16":
+                case "9x16":
+                case "9-16":
+                    return "9:16";
+                case "1:1":
+                case "1x1":
+                case "square":
+                    return "1:1";
+                case "4:3":
+                case "4x3":
+                case "4-3":
+                    return "4:3";
+                case "4:9":
+                case "4x9":
+                case "4-9":
+                    return "4:9";
+                default:
+                    return FitMode;
+            }
+        }
+
+        public static void SetFitMode(string mode)
+        {
+            FitMode = NormalizeFitMode(mode);
+            Cover = FitMode == "fullscreen";
+            SaveSettingsKeys();
+        }
+
+        public static float GetAspectRatio(float naturalW, float naturalH)
+        {
+            switch (FitMode)
+            {
+                case "16:9": return 16f / 9f;
+                case "9:16": return 9f / 16f;
+                case "1:1": return 1f;
+                case "4:3": return 4f / 3f;
+                case "4:9": return 4f / 9f;
+                case "fit":
+                case "fullscreen":
+                default:
+                    return naturalH > 0.01f ? naturalW / naturalH : 16f / 9f;
+            }
+        }
+
+        public static bool UseCoverMode()
+        {
+            return FitMode == "fullscreen";
         }
 
         private static bool ParseBool(string s, bool fallback)

@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace BetterUI.Utils.MenuWallpaper;
+namespace MenuWallpaper;
 
 internal sealed class GifFrameInfo
 {

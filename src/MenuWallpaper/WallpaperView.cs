@@ -8,7 +8,6 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
-using BetterUI.Utils.MenuWallpaper;
 
 namespace MenuWallpaper
 {
@@ -37,6 +36,56 @@ namespace MenuWallpaper
             image = rawImage;
             fitter = aspectFitter;
             image.enabled = false;
+        }
+
+        public void ApplyVideoAudio()
+        {
+            if (video == null) return;
+            try
+            {
+                bool on = WallpaperConfig.VideoSound;
+                if (on)
+                {
+                    // If audio was disabled at prepare, restart so tracks become available
+                    if (video.audioOutputMode != VideoAudioOutputMode.Direct || !videoPrepared)
+                    {
+                        string path = CurrentPath;
+                        if (string.IsNullOrEmpty(path)) return;
+                        string error;
+                        Play(path, out error);
+                        return;
+                    }
+                    if (video.audioTrackCount > 0)
+                    {
+                        video.EnableAudioTrack(0, true);
+                        video.SetDirectAudioMute(0, false);
+                        video.SetDirectAudioVolume(0, WallpaperConfig.VideoVolume);
+                    }
+                }
+                else
+                {
+                    if (video.audioTrackCount > 0)
+                    {
+                        video.SetDirectAudioMute(0, true);
+                        video.SetDirectAudioVolume(0, 0f);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("[MenuWallpaper] ApplyVideoAudio: " + e.Message);
+            }
+        }
+
+        public void RefreshFit()
+        {
+            if (fitter == null || image == null || image.texture == null) return;
+            float w = image.texture.width;
+            float h = image.texture.height;
+            fitter.aspectMode = WallpaperConfig.UseCoverMode()
+                ? AspectRatioFitter.AspectMode.EnvelopeParent
+                : AspectRatioFitter.AspectMode.FitInParent;
+            fitter.aspectRatio = WallpaperConfig.GetAspectRatio(w, h);
         }
 
         private static bool IsVideoExtension(string ext)
@@ -126,7 +175,7 @@ namespace MenuWallpaper
         private void PlayGif(string path)
         {
             byte[] bytes = File.ReadAllBytes(path);
-            var decoder = new BetterUI.Utils.MenuWallpaper.GifDecoder(bytes);
+            var decoder = new GifDecoder(bytes);
             int w = decoder.Width, h = decoder.Height;
 
             Texture2D tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
@@ -162,11 +211,10 @@ namespace MenuWallpaper
             video.playOnAwake = false;
             video.isLooping = true;
             video.skipOnDrop = true;
-            video.loopPointReached += OnVideoLoopPoint;
             video.waitForFirstFrame = true;
             video.renderMode = VideoRenderMode.APIOnly;
             video.source = VideoSource.Url;
-            video.url = path;
+            video.url = ToVideoUrl(path);
 
             if (WallpaperConfig.VideoSound)
             {
@@ -180,10 +228,24 @@ namespace MenuWallpaper
 
             video.prepareCompleted += OnVideoPrepared;
             video.errorReceived += OnVideoError;
+            video.loopPointReached += OnVideoLoopPoint;
             videoPrepared = false;
             waitingForFirstFrame = true;
             image.enabled = false;
             video.Prepare();
+        }
+
+        private static string ToVideoUrl(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return path;
+            if (path.StartsWith("file:", StringComparison.OrdinalIgnoreCase) ||
+                path.StartsWith("http:", StringComparison.OrdinalIgnoreCase) ||
+                path.StartsWith("https:", StringComparison.OrdinalIgnoreCase))
+                return path;
+            string normalized = path.Replace('\\', '/');
+            if (normalized.Length >= 2 && normalized[1] == ':')
+                return "file:///" + normalized;
+            return "file://" + normalized;
         }
 
         private void OnVideoPrepared(VideoPlayer vp)
@@ -192,6 +254,7 @@ namespace MenuWallpaper
             if (WallpaperConfig.VideoSound && vp.audioTrackCount > 0)
                 vp.SetDirectAudioVolume(0, WallpaperConfig.VideoVolume);
             videoPrepared = true;
+            vp.isLooping = true;
             vp.Play();
         }
 
@@ -204,12 +267,31 @@ namespace MenuWallpaper
         private void OnVideoLoopPoint(VideoPlayer vp)
         {
             if (vp != video) return;
+            RestartVideo(vp);
+        }
+
+        private static void RestartVideo(VideoPlayer vp)
+        {
+            if (vp == null) return;
             try
             {
-                vp.time = 0;
-                if (!vp.isPlaying) vp.Play();
+                vp.isLooping = true;
+                if (vp.canSetTime)
+                    vp.time = 0;
+                else
+                    vp.frame = 0;
+                if (!vp.isPlaying)
+                    vp.Play();
             }
-            catch { }
+            catch
+            {
+                try
+                {
+                    vp.Stop();
+                    vp.Play();
+                }
+                catch { }
+            }
         }
 
         private void Show(Texture tex, float w, float h)
@@ -217,10 +299,10 @@ namespace MenuWallpaper
             image.texture = tex;
             image.uvRect = new Rect(0f, 0f, 1f, 1f);
             image.color = Color.white;
-            fitter.aspectMode = WallpaperConfig.Cover
+            fitter.aspectMode = WallpaperConfig.UseCoverMode()
                 ? AspectRatioFitter.AspectMode.EnvelopeParent
                 : AspectRatioFitter.AspectMode.FitInParent;
-            fitter.aspectRatio = h > 0f ? w / h : 16f / 9f;
+            fitter.aspectRatio = WallpaperConfig.GetAspectRatio(w, h);
             image.enabled = true;
         }
 
@@ -266,15 +348,9 @@ namespace MenuWallpaper
 
             if (video != null && videoPrepared)
             {
+                // MP4 only: if playback stopped at the end, force restart (some clips ignore isLooping)
                 if (!waitingForFirstFrame && !video.isPlaying)
-                {
-                    try
-                    {
-                        video.time = 0;
-                        video.Play();
-                    }
-                    catch { }
-                }
+                    RestartVideo(video);
 
                 Texture vt = video.texture;
                 if (vt != null)
