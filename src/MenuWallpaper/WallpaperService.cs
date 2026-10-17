@@ -53,7 +53,30 @@ namespace MenuWallpaper
             if (TryInstall(home)) return;
             EnsureRunner();
         }
+        public static void LeaveHome()
+        {
+            if (view != null)
+            {
+                try
+                {
+                    if (view)
+                        UnityEngine.Object.Destroy(view.gameObject);
+                }
+                catch { }
+                view = null;
+            }
 
+            if (runner != null)
+            {
+                try
+                {
+                    if (runner)
+                        UnityEngine.Object.Destroy(runner.gameObject);
+                }
+                catch { }
+                runner = null;
+            }
+        }
         private static void DestroyView()
         {
             if (view == null) return;
@@ -110,22 +133,46 @@ namespace MenuWallpaper
         {
             try
             {
+                if (home == null || !home.isActiveAndEnabled)
+                    return false;
+
                 if (view != null && !view) view = null;
                 if (view != null) return true;
 
-                GameButton settings = ResolveSettingsButton(home);
-                if (settings == null) return false;
+                Canvas canvas = null;
 
-                Canvas canvas = settings.GetComponentInParent<Canvas>();
+                GameButton settings = ResolveSettingsButton(home);
+                if (settings != null)
+                    canvas = settings.GetComponentInParent<Canvas>();
+
                 if (canvas == null)
                 {
-                    Debug.LogWarning("[MenuWallpaper] The menu has no Canvas - waiting...");
+                    GameButton[] all = UnityEngine.Object.FindObjectsByType<GameButton>(
+                        FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+
+                    foreach (GameButton b in all)
+                    {
+                        if (b == null || !b.gameObject.activeInHierarchy) continue;
+                        string label = ReadButtonLabel(b);
+                        if (label == null) continue;
+
+                        bool isPlay = label.IndexOf("Play", StringComparison.OrdinalIgnoreCase) >= 0;
+                        bool isSettings = label.IndexOf("Settings", StringComparison.OrdinalIgnoreCase) >= 0;
+                        if (!isPlay && !isSettings) continue;
+
+                        canvas = b.GetComponentInParent<Canvas>();
+                        if (canvas != null) break;
+                    }
+                }
+
+                if (canvas == null)
+                {
+                    Debug.LogWarning("[MenuWallpaper] Home canvas not found");
                     return false;
                 }
-                canvas = canvas.rootCanvas;
 
+                canvas = canvas.rootCanvas;
                 view = CreateView(canvas);
-                view.OnFailed = OnPlaybackFailed;
 
                 string path = WallpaperState.GetPlayablePath();
                 if (path != null)
@@ -150,46 +197,38 @@ namespace MenuWallpaper
                 return false;
             }
         }
-
         private static GameButton ResolveSettingsButton(HomeManager home)
         {
-            if (home != null)
-            {
-                try
-                {
-                    if (home.settingsButton != null) return home.settingsButton;
-                }
-                catch { }
-
-                try
-                {
-                    var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic;
-                    foreach (var f in home.GetType().GetFields(flags))
-                    {
-                        if (!typeof(GameButton).IsAssignableFrom(f.FieldType)) continue;
-                        if (f.Name.IndexOf("settings", StringComparison.OrdinalIgnoreCase) < 0) continue;
-                        GameButton b = f.GetValue(home) as GameButton;
-                        if (b != null) return b;
-                    }
-                }
-                catch { }
-            }
+            if (home == null)
+                return null;
 
             try
             {
-                GameButton[] all = UnityEngine.Object.FindObjectsByType<GameButton>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-                foreach (GameButton b in all)
+                if (home.settingsButton != null)
+                    return home.settingsButton;
+            }
+            catch { }
+
+            try
+            {
+                var flags = System.Reflection.BindingFlags.Instance
+                          | System.Reflection.BindingFlags.Public
+                          | System.Reflection.BindingFlags.NonPublic;
+
+                foreach (var f in home.GetType().GetFields(flags))
                 {
-                    if (b == null || !b.gameObject.activeInHierarchy) continue;
-                    string label = ReadButtonLabel(b);
-                    if (label != null && label.IndexOf("Settings", StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (!typeof(GameButton).IsAssignableFrom(f.FieldType))
+                        continue;
+                    if (f.Name.IndexOf("settings", StringComparison.OrdinalIgnoreCase) < 0)
+                        continue;
+
+                    GameButton b = f.GetValue(home) as GameButton;
+                    if (b != null)
                         return b;
                 }
             }
-            catch (Exception e)
-            {
-                Debug.LogWarning("[MenuWallpaper] Settings button search failed: " + e.Message);
-            }
+            catch { }
+
             return null;
         }
 
@@ -231,6 +270,14 @@ namespace MenuWallpaper
                 elapsed += Time.unscaledDeltaTime;
                 HomeManager home = null;
                 try { home = HomeManager.main; } catch { }
+
+                if (home == null || !home.isActiveAndEnabled)
+                {
+                    LeaveHome();
+                    Destroy(gameObject);
+                    runner = null;
+                    return;
+                }
 
                 if (TryInstall(home)) return;
 
